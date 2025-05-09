@@ -37,3 +37,40 @@ def delete_book(db: Session, book_id: int):
         db.delete(db_book)
         db.commit()
     return db_book
+
+
+def sell_book(db: Session, book_id: int):
+    db_book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if db_book:
+        if db_book.copies_available <= 0:
+            return None
+        db_book.copies_available -= 1
+        db_book.copies_sold += 1
+        db.commit()
+        db.refresh(db_book)
+    return db_book
+
+def get_total_revenue(db: Session):
+    total = 0.0
+    books = db.query(models.Book).all()
+    for book in books:
+        total += book.copies_sold * book.price
+    return {"total_revenue": total}
+
+def search_books(db: Session, author: str = None, title: str = None, 
+                 min_price: float = None, max_price: float = None,
+                 genre_id: int = None, skip: int = 0, limit: int = 100):
+    query = db.query(models.Book)
+    
+    if author:
+        query = query.filter(models.Book.author.ilike(f"%{author}%"))
+    if title:
+        query = query.filter(models.Book.title.ilike(f"%{title}%"))
+    if min_price is not None:
+        query = query.filter(models.Book.price >= min_price)
+    if max_price is not None:
+        query = query.filter(models.Book.price <= max_price)
+    if genre_id is not None:
+        query = query.filter(models.Book.genre_id == genre_id)
+        
+    return query.offset(skip).limit(limit).all()

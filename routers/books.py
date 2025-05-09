@@ -42,3 +42,38 @@ def update_book(book_id: int, book: schemas.BookUpdate, db: Session = Depends(ge
 def delete_book(book_id: int, db: Session = Depends(get_db)):
     if not crud.delete_book(db, book_id=book_id):
         raise HTTPException(status_code=404, detail="Book not found")
+    
+@router.get("/books/", response_model=List[schemas.Book])
+def read_books(author: Optional[str] = None, 
+               title: Optional[str] = None,
+               min_price: Optional[float] = None,
+               max_price: Optional[float] = None,
+               genre_id: Optional[int] = None,
+               skip: int = 0, 
+               limit: int = 100,
+               db: Session = Depends(get_db)):
+    books = crud.search_books(
+        db, 
+        author=author,
+        title=title,
+        min_price=min_price,
+        max_price=max_price,
+        genre_id=genre_id,
+        skip=skip, 
+        limit=limit
+    )
+    return books
+
+@router.post("/books/{book_id}/sell", response_model=schemas.Book)
+def sell_book(book_id: int, db: Session = Depends(get_db)):
+    db_book = crud.sell_book(db, book_id=book_id)
+    if db_book is None:
+        raise HTTPException(
+            status_code=400, 
+            detail="No copies available to sell"
+        )
+    return db_book
+
+@router.get("/books/revenue", response_model=schemas.TotalRevenue)
+def get_revenue(db: Session = Depends(get_db)):
+    return crud.get_total_revenue(db)
