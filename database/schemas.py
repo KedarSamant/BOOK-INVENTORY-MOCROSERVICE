@@ -9,7 +9,8 @@ class BookBase(BaseModel):
     isbn: str
     published_date: date
     price: float
-    genre_id: int
+    genre_id: Optional[int] = None
+    genre_name: Optional[str] = None
     copies_available: Optional[int] = 1
 
 class BookCreate(BookBase):
@@ -19,7 +20,7 @@ class BookCreate(BookBase):
         if not v.strip():
             raise ValueError("Field cannot be empty")
         return v.strip()
-    
+
     @field_validator('isbn')
     @classmethod
     def check_isbn(cls, v: str) -> str:
@@ -29,7 +30,7 @@ class BookCreate(BookBase):
         if not (re.fullmatch(isbn10_regex, v) or re.fullmatch(isbn13_regex, v)):
             raise ValueError("Invalid ISBN format")
         return v
-    
+
     @field_validator('published_date')
     @classmethod
     def check_date_not_future(cls, v: date) -> date:
@@ -50,12 +51,16 @@ class BookUpdate(BookBase):
 class Book(BookBase):
     id: int
     copies_sold: int
-    total_revenue: float
+    total_revenue: Optional[float] = 0.0  # Make total_revenue optional
     
-    model_config = ConfigDict(from_attributes=True)  # Replaces orm_mode
+class BookResponse(BookBase):
+    id: int
+    copies_sold: Optional[int] = 0
+    total_revenue: Optional[float] = 0.0
 
 class Genre(BaseModel):
     id: int
     name: str
-    
-    model_config = ConfigDict(from_attributes=True)
+
+class TotalRevenue(BaseModel):
+    total_revenue: float
