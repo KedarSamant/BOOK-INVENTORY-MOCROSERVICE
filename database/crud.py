@@ -62,6 +62,8 @@ def update_book(db: Session, book_id: int, book: schemas.BookUpdate):
         return db_book
     return None
 
+
+
 def delete_book(db: Session, book_id: int):
     db_book = db.query(models.Book).filter(models.Book.id == book_id).first()
     if db_book:

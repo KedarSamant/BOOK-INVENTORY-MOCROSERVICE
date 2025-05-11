@@ -4,11 +4,11 @@ from typing import Optional
 import re
 
 class BookBase(BaseModel):
-    title: str
-    author: str
-    isbn: str
-    published_date: date
-    price: float
+    title: Optional[str] = None
+    author: Optional[str] = None
+    isbn: Optional[str] = None
+    published_date: Optional[date] = None
+    price: Optional[float] = None
     genre_id: Optional[int] = None
     genre_name: Optional[str] = None
     copies_available: Optional[int] = 1
